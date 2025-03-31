@@ -20,7 +20,6 @@ export default function Register() {
 
   const API_BASE = process.env.REACT_APP_API_BASE;
 
-  // 📩 Kod gönder
   const handleSendCode = async () => {
     if (!email) return alert('Lütfen e-posta girin!');
   
@@ -31,23 +30,31 @@ export default function Register() {
         body: JSON.stringify({ email })
       });
   
-      const text = await response.text();
+      const contentType = response.headers.get("content-type");
+      let result;
+  
+      // Gelen yanıt JSON mu yoksa düz yazı mı kontrol ediyoruz
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        result = await response.text();
+      }
   
       if (response.ok) {
         setCodeSent(true);
-        alert(text); // başarılı mesaj zaten plain text
+        alert(typeof result === 'string' ? result : result.message || "Kod gönderildi.");
       } else {
-        try {
-          const json = JSON.parse(text);
-          alert(json.message || "Kod gönderimi başarısız.");
-        } catch {
-          alert(text || "Kod gönderimi başarısız.");
-        }
+        const errorMessage = typeof result === 'string'
+          ? result
+          : result.message || "Kod gönderimi başarısız.";
+        alert(errorMessage);
       }
+  
     } catch (error) {
       alert("İstek sırasında hata oluştu: " + error.message);
     }
   };
+  
   
 
   // ✅ Kod Doğrulama
