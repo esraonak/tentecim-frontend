@@ -22,7 +22,7 @@ export default function Register() {
 
   // 📩 Kod gönder
   const handleSendCode = async () => {
-    if (!email) return alert('Lütfen e-posta girin.');
+    if (!email) return alert('Lütfen e-posta girin!');
   
     try {
       const response = await fetch(`${API_BASE}/api/email/sendcode`, {
