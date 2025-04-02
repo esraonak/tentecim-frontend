@@ -1,118 +1,74 @@
-// Register.jsx
-import React, { useState } from 'react';
+// ✅ Gereksiz olan: useState, useEffect ve fetchAdminsByFirmId kaldırıldı
+// ✅ Yerine: availableAdmins props'u eklendi
+
+import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import axios from 'axios';
+import { fetchFirms, fetchFirmDetails } from '../api/firms';
+import Select from 'react-select';
+import Flag from 'react-world-flags';
+import countries from 'i18n-iso-countries';
+import enLocale from 'i18n-iso-countries/langs/en.json';
 
-export default function Register() {
-  const [role, setRole] = useState('user');
-  const [email, setEmail] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
-  const [code, setCode] = useState('');
-  const [codeVerified, setCodeVerified] = useState(false);
-  const [fullName, setFullName] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+countries.registerLocale(enLocale);
 
-  const API_BASE = process.env.REACT_APP_API_BASE;
+export default function Register({
+  role, setRole,
+  email, setEmail,
+  codeSent, setCodeSent,
+  code, setCode,
+  codeVerified, setCodeVerified,
+  fullName, setFullName,
+  password, setPassword,
+  confirmPassword, setConfirmPassword,
+  showPassword, setShowPassword,
+  showConfirm, setShowConfirm,
+  message, error,
+  onSendCode, onVerifyCode, onRegister,
+  firmId, setFirmId,
+  country, setCountry,
+  city, setCity,
+  currency, setCurrency,
+  parentAdminId, setParentAdminId,
+  availableAdmins // ✅ props olarak dışarıdan geliyor
+}) {
+  const [firms, setFirms] = useState([]);
+  const [availableCountries, setAvailableCountries] = useState([]);
+  const [availableCities, setAvailableCities] = useState([]);
+  const [availableCurrencies, setAvailableCurrencies] = useState([]);
 
-  const handleSendCode = async () => {
-    if (!email) return alert('Lütfen e-posta girin!');
-  
-    try {
-      const response = await fetch(`${API_BASE}/api/email/sendcode`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-  
-      const contentType = response.headers.get("content-type");
-      let result;
-  
-      // Gelen yanıt JSON mu yoksa düz yazı mı kontrol ediyoruz
-      if (contentType && contentType.includes("application/json")) {
-        result = await response.json();
-      } else {
-        result = await response.text();
+  const allCountries = Object.entries(countries.getNames('en')).map(([code, name]) => ({
+    value: code,
+    label: (
+      <>
+        <Flag code={code} style={{ width: 20, marginRight: 8 }} /> {name}
+      </>
+    )
+  }));
+
+  useEffect(() => {
+    const loadFirms = async () => {
+      const data = await fetchFirms();
+      setFirms(data);
+    };
+    loadFirms();
+  }, []);
+
+  useEffect(() => {
+    const loadDetails = async () => {
+      if (firmId) {
+        const details = await fetchFirmDetails(firmId);
+        setAvailableCountries(details.supportedCountries || []);
+        setAvailableCurrencies(details.supportedCurrencies || []);
+        const cities = details.supportedCities || {};
+        const defaultCountry = details.supportedCountries?.[0] || 'TR';
+        setAvailableCities(cities[defaultCountry] || []);
+        setCountry(defaultCountry);
+        setCurrency(details.supportedCurrencies?.[0] || 'TRY');
+        setCity((cities[defaultCountry] || [])[0] || '');
       }
-  
-      if (response.ok) {
-        setCodeSent(true);
-        alert(typeof result === 'string' ? result : result.message || "Kod gönderildi.");
-      } else {
-        const errorMessage = typeof result === 'string'
-          ? result
-          : result.message || "Kod gönderimi başarısız.";
-        alert(errorMessage);
-      }
-  
-    } catch (error) {
-      alert("İstek sırasında hata oluştu: " + error.message);
-    }
-  };
-  
-  
-
-  // ✅ Kod Doğrulama
-  const handleVerifyCode = async () => {
-    if (!code || !email) return alert("Lütfen kodu ve e-posta adresini girin.");
-
-    try {
-      const response = await fetch(`${API_BASE}/api/email/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code })
-      });
-
-      const result = await response.text();
-      if (response.ok) {
-        setCodeVerified(true);
-        alert("Kod doğrulandı ✅");
-      } else {
-        alert(`Hata: ${result}`);
-      }
-    } catch (error) {
-      console.error("Kod doğrulama hatası:", error);
-      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
-    }
-  };
-
-  // 📝 Kayıt İşlemi
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    setError('');
-
-    if (password !== confirmPassword) {
-      setError('Şifreler uyuşmuyor!');
-      return;
-    }
-
-    try {
-      const payload = {
-        username: fullName,
-        email,
-        password,
-        companyName: role === 'admin' ? companyName : '',
-        role,
-        createdAt: new Date().toISOString()
-      };
-
-      const response = await axios.post(`${API_BASE}/api/auth/register`, payload);
-
-      if (response.status === 200) {
-        setMessage(response.data.message || 'Kayıt başarılı.');
-      } else {
-        setError('Kayıt işlemi başarısız.');
-      }
-    } catch (err) {
-      setError(err.response?.data || 'Sunucu hatası oluştu.');
-    }
-  };
+    };
+    loadDetails();
+  }, [firmId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-indigo-500 flex items-center justify-center px-4">
@@ -121,7 +77,7 @@ export default function Register() {
         {message && <div className="text-green-600 font-medium text-center mb-4">{message}</div>}
         {error && <div className="text-red-600 font-medium text-center mb-4">{error}</div>}
 
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={onRegister} className="space-y-4">
           <div className="flex gap-4">
             <label className="flex items-center gap-2">
               <input type="radio" value="user" checked={role === 'user'} onChange={() => setRole('user')} /> Kullanıcı
@@ -132,12 +88,34 @@ export default function Register() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700">Firma Seç</label>
+            <select value={firmId || ''} onChange={(e) => setFirmId(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md">
+              <option value="">Firma Seçiniz</option>
+              {firms.map(firm => (
+                <option key={firm.id} value={firm.id}>{firm.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {role === 'user' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Admin Seç</label>
+              <select value={parentAdminId || ''} onChange={(e) => setParentAdminId(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md">
+                <option value="">Admin Seçiniz</option>
+                {availableAdmins.map(admin => (
+                  <option key={admin.id} value={admin.id}>{admin.username} ({admin.email})</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div>
             <label className="block text-sm font-medium text-gray-700">E-posta</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={codeSent} className="mt-1 w-full px-4 py-2 border rounded-md" />
+            <input type="email" disabled={!firmId} placeholder="E-posta adresi" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md" />
           </div>
 
           {!codeSent && (
-            <button type="button" onClick={handleSendCode} className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">
+            <button type="button" onClick={onSendCode} className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">
               Kodu Gönder
             </button>
           )}
@@ -145,7 +123,7 @@ export default function Register() {
           {codeSent && !codeVerified && (
             <>
               <input type="text" placeholder="Gelen kodu girin" value={code} onChange={(e) => setCode(e.target.value)} className="w-full px-4 py-2 border rounded-md" />
-              <button type="button" onClick={handleVerifyCode} className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition">
+              <button type="button" onClick={onVerifyCode} className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition">
                 Kodu Doğrula
               </button>
             </>
@@ -153,16 +131,38 @@ export default function Register() {
 
           {codeVerified && (
             <>
-              {role === 'admin' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Şirket Adı</label>
-                  <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md" />
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Ülke</label>
+                <Select
+                  options={allCountries.filter(c => availableCountries.includes(c.value))}
+                  value={allCountries.find(opt => opt.value === country)}
+                  onChange={(selected) => {
+                    setCountry(selected.value);
+                    setAvailableCities(firms.find(f => f.id === firmId)?.supportedCities?.[selected.value] || []);
+                    setCity('');
+                  }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Şehir</label>
+                <select value={city} onChange={(e) => setCity(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md">
+                  {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Para Birimi</label>
+                <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md">
+                  {availableCurrencies.map(cur => <option key={cur} value={cur}>{cur}</option>)}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700">Ad Soyad</label>
                 <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md" />
               </div>
+
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">Şifre</label>
                 <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md" />
@@ -170,6 +170,7 @@ export default function Register() {
                   {showPassword ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
                 </div>
               </div>
+
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">Şifre Tekrar</label>
                 <input type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-md" />
@@ -177,6 +178,7 @@ export default function Register() {
                   {showConfirm ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
                 </div>
               </div>
+
               <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition">
                 Kayıt Ol
               </button>
