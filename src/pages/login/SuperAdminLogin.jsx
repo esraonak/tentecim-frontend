@@ -18,10 +18,15 @@ const SuperAdminLogin = () => {
 
       const result = await loginSuperAdmin(email, password, rememberMe, deviceToken);
 
-      localStorage.setItem("role", result.user.role);
-      localStorage.setItem("email", result.user.email);
-      localStorage.setItem("username", result.user.username);
-
+      if (result?.user) {
+        localStorage.setItem("role", result.user.role);
+        localStorage.setItem("email", result.user.email);
+        localStorage.setItem("username", result.user.username);
+        navigate("/dashboard");
+      } else {
+        setError("Sunucudan kullanıcı bilgisi alınamadı.");
+      }
+      
       navigate("/dashboard");
     } catch (err) {
       if (err?.response?.data) {
