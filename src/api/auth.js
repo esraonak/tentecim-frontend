@@ -1,11 +1,11 @@
-// src/api/auth.js
 import axios from "axios";
 
 const API_BASE = process.env.REACT_APP_API_BASE;
 
-/**
- * 📩 E-posta adresine doğrulama kodu gönderir.
- */
+// ================================================
+// 📩 1. E-POSTA KODU GÖNDERME
+// Route: POST /api/email/sendcode
+// ================================================
 export const sendVerificationCode = async (email, firmId) => {
   try {
     const response = await fetch(`${API_BASE}/api/email/sendcode`, {
@@ -21,13 +21,17 @@ export const sendVerificationCode = async (email, firmId) => {
 
     return { ok: response.ok, result };
   } catch (error) {
-    return { ok: false, result: "İstek sırasında bir hata oluştu: " + error.message };
+    return {
+      ok: false,
+      result: "İstek sırasında bir hata oluştu: " + error.message,
+    };
   }
 };
 
-/**
- * ✅ Kullanıcının girdiği e-posta ve kodu doğrular.
- */
+// ================================================
+// ✅ 2. E-POSTA KODU DOĞRULAMA
+// Route: POST /api/email/verify
+// ================================================
 export const verifyCode = async (email, code) => {
   try {
     const response = await fetch(`${API_BASE}/api/email/verify`, {
@@ -39,13 +43,17 @@ export const verifyCode = async (email, code) => {
     const result = await response.text();
     return { ok: response.ok, result };
   } catch (error) {
-    return { ok: false, result: "Doğrulama isteği başarısız: " + error.message };
+    return {
+      ok: false,
+      result: "Doğrulama isteği başarısız: " + error.message,
+    };
   }
 };
 
-/**
- * 📝 Yeni kullanıcı (Admin/User) kaydı oluşturur.
- */
+// ================================================
+// 📝 3. KULLANICI KAYDI (Admin veya User)
+// Route: POST /api/auth/register
+// ================================================
 export const registerUser = async (payload) => {
   try {
     const response = await axios.post(`${API_BASE}/api/auth/register`, payload);
@@ -59,49 +67,48 @@ export const registerUser = async (payload) => {
   }
 };
 
-/**
- * 🔐 SuperAdmin girişi yapar.
- */
+// ================================================
+// 🔐 4. GİRİŞ METOTLARI (SuperAdmin, Admin, User)
+// Route: POST /api/superadmin/login
+// ================================================
+
+// ✅ SuperAdmin Girişi
 export const loginSuperAdmin = async (email, password, rememberMe, deviceToken) => {
-  const response = await axios.post(`${API_BASE}/api/auth/login`, {
+  const response = await axios.post(`${API_BASE}/api/superadmin/login`, {
     email,
     password,
-    role: "superadmin",
     rememberMe,
     deviceToken,
   });
   return response.data;
 };
 
-/**
- * 🔐 Admin girişi yapar.
- */
+// ✅ Admin Girişi
 export const loginAdmin = async (email, password, rememberMe, deviceToken) => {
-  const response = await axios.post(`${API_BASE}/api/auth/login`, {
+  const response = await axios.post(`${API_BASE}/api/admin/login`, {
     email,
     password,
-    role: "admin",
     rememberMe,
     deviceToken,
   });
   return response.data;
 };
 
-/**
- * 🔐 User girişi yapar.
- */
+// ✅ User Girişi
 export const loginUser = async (email, password, rememberMe, deviceToken) => {
-  const response = await axios.post(`${API_BASE}/api/auth/login`, {
+  const response = await axios.post(`${API_BASE}/api/user/login`, {
     email,
     password,
-    role: "user",
     rememberMe,
     deviceToken,
   });
   return response.data;
 };
 
-// src/api/auth.js
+// ================================================
+// 🔁 5. ŞİFRE SIFIRLAMA KODU GÖNDER
+// Route: POST /api/auth/send-reset-code
+// ================================================
 export const sendResetCode = async (email, role) => {
   try {
     const res = await axios.post(`${API_BASE}/api/auth/send-reset-code`, {
@@ -118,6 +125,3 @@ export const sendResetCode = async (email, role) => {
     return { ok: false, result: msg };
   }
 };
-
-
-

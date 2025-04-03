@@ -1,30 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import Register from '../Register';
 import { sendVerificationCode, verifyCode, registerUser } from '../../api/auth';
-import { fetchAdminsByFirmId } from '../../api/firms'; // ✅ adminleri getir
+import { fetchAdminsByFirmId } from '../../api/firms';
 
 export default function RegisterContainer() {
+  // Form verileri
   const [role, setRole] = useState('user');
   const [email, setEmail] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
-  const [code, setCode] = useState('');
-  const [codeVerified, setCodeVerified] = useState(false);
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // UI kontrol durumları
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
+  // Kod gönderim durumları
+  const [code, setCode] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
+  const [codeVerified, setCodeVerified] = useState(false);
+
+  // Firma ve konum bilgileri
   const [firmId, setFirmId] = useState('');
   const [country, setCountry] = useState('TR');
   const [city, setCity] = useState('');
   const [currency, setCurrency] = useState('TRY');
 
-  const [parentAdminId, setParentAdminId] = useState(''); // ✅ admin seçimi için
-  const [availableAdmins, setAvailableAdmins] = useState([]); // ✅ admin listesi
+  // Kullanıcı admin'e bağlıysa
+  const [parentAdminId, setParentAdminId] = useState('');
+  const [availableAdmins, setAvailableAdmins] = useState([]);
 
+  // Firma veya role değiştiğinde adminleri çek
   useEffect(() => {
     const loadAdmins = async () => {
       if (firmId && role === 'user') {
@@ -39,6 +47,7 @@ export default function RegisterContainer() {
     loadAdmins();
   }, [firmId, role]);
 
+  // Kod gönder
   const onSendCode = async () => {
     if (!email || !firmId) return alert("E-posta ve firma seçimi gerekli!");
     const result = await sendVerificationCode(email, firmId);
@@ -50,6 +59,7 @@ export default function RegisterContainer() {
     }
   };
 
+  // Kod doğrula
   const onVerifyCode = async () => {
     if (!code || !email) return alert("E-posta ve kod girilmeli");
     const result = await verifyCode(email, code);
@@ -61,6 +71,7 @@ export default function RegisterContainer() {
     }
   };
 
+  // Kayıt ol
   const onRegister = async (e) => {
     e.preventDefault();
     setError('');
@@ -91,25 +102,34 @@ export default function RegisterContainer() {
 
   return (
     <Register
+      // Form kontrol
       role={role} setRole={setRole}
       email={email} setEmail={setEmail}
-      codeSent={codeSent} setCodeSent={setCodeSent}
-      code={code} setCode={setCode}
-      codeVerified={codeVerified} setCodeVerified={setCodeVerified}
       fullName={fullName} setFullName={setFullName}
       password={password} setPassword={setPassword}
       confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword}
       showPassword={showPassword} setShowPassword={setShowPassword}
       showConfirm={showConfirm} setShowConfirm={setShowConfirm}
+
+      // Kod kontrol
+      codeSent={codeSent} setCodeSent={setCodeSent}
+      code={code} setCode={setCode}
+      codeVerified={codeVerified} setCodeVerified={setCodeVerified}
+
+      // Diğer
       message={message}
       error={error}
       onSendCode={onSendCode}
       onVerifyCode={onVerifyCode}
       onRegister={onRegister}
+
+      // Lokasyon ve firma bilgisi
       firmId={firmId} setFirmId={setFirmId}
       country={country} setCountry={setCountry}
       city={city} setCity={setCity}
       currency={currency} setCurrency={setCurrency}
+
+      // Admin bağlantısı
       parentAdminId={parentAdminId} setParentAdminId={setParentAdminId}
       availableAdmins={availableAdmins}
     />

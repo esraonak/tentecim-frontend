@@ -23,9 +23,9 @@ function App() {
     <Router>
       <Routes>
         {/* 🔑 Giriş Sayfaları */}
-        <Route path="/login/superadmin" element={<SuperAdminLogin />} />
-        <Route path="/login/admin" element={<AdminLogin />} />
-        <Route path="/login/user" element={<UserLogin />} />
+        <Route path="/superadmin/login" element={<SuperAdminLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/user/login" element={<UserLogin />} />
 
         {/* 🔁 Şifremi Unuttum */}
         <Route path="/forgot-password" element={<ForgotPassword />} />

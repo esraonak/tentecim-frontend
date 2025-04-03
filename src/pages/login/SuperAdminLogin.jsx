@@ -22,17 +22,15 @@ const SuperAdminLogin = () => {
         localStorage.setItem("role", result.user.role);
         localStorage.setItem("email", result.user.email);
         localStorage.setItem("username", result.user.username);
-        navigate("/dashboard");
+        navigate("/dashboard"); // ✅ sadece başarılıysa yönlendir
       } else {
         setError("Sunucudan kullanıcı bilgisi alınamadı.");
       }
-      
-      navigate("/dashboard");
     } catch (err) {
       if (err?.response?.data) {
-        setError(err.response.data); // Backend'in gönderdiği gerçek hata mesajını gösterir
+        setError(err.response.data);
       } else if (err?.message) {
-        setError("Sunucu hatası: " + err.message); // Örneğin bağlantı hatası
+        setError("Sunucu hatası: " + err.message);
       } else {
         setError("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
       }
@@ -42,16 +40,14 @@ const SuperAdminLogin = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-indigo-700 px-4">
       <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-          SuperAdmin Giriş
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">SuperAdmin Giriş</h2>
 
         <input
           type="email"
           placeholder="E-posta"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-md focus:outline-none"
         />
 
         <input
@@ -59,7 +55,7 @@ const SuperAdminLogin = () => {
           placeholder="Şifre"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-md focus:outline-none"
         />
 
         <label className="flex items-center text-sm mb-4">
@@ -74,20 +70,18 @@ const SuperAdminLogin = () => {
 
         <button
           onClick={handleLogin}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition duration-200"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md"
         >
           Giriş Yap
         </button>
 
-        <div className="text-sm text-center mt-4 space-x-4">
+        <div className="text-sm text-center mt-4">
           <a href="/forgot-password?role=superadmin" className="text-indigo-600 hover:underline">
             Şifremi Unuttum
           </a>
         </div>
 
-        {error && (
-          <p className="text-red-600 text-sm mt-4 text-center">{error}</p>
-        )}
+        {error && <p className="text-red-600 text-sm mt-4 text-center">{error}</p>}
       </div>
     </div>
   );

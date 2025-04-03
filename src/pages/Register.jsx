@@ -1,6 +1,3 @@
-// ✅ Gereksiz olan: useState, useEffect ve fetchAdminsByFirmId kaldırıldı
-// ✅ Yerine: availableAdmins props'u eklendi
-
 import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { fetchFirms, fetchFirmDetails } from '../api/firms';
@@ -14,9 +11,8 @@ countries.registerLocale(enLocale);
 export default function Register({
   role, setRole,
   email, setEmail,
-  codeSent, setCodeSent,
-  code, setCode,
-  codeVerified, setCodeVerified,
+  codeSent, code, setCode,
+  codeVerified,
   fullName, setFullName,
   password, setPassword,
   confirmPassword, setConfirmPassword,
@@ -29,7 +25,7 @@ export default function Register({
   city, setCity,
   currency, setCurrency,
   parentAdminId, setParentAdminId,
-  availableAdmins // ✅ props olarak dışarıdan geliyor
+  availableAdmins
 }) {
   const [firms, setFirms] = useState([]);
   const [availableCountries, setAvailableCountries] = useState([]);
