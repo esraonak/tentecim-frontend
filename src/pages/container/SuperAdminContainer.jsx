@@ -7,7 +7,7 @@ import {
   getDashboardStats,
   getPendingUsers,
   approvePendingUser,
-  rejectPendingUser,
+  deletePendingUser,
 } from '../../api/superadmin';
 
 export default function SuperAdminContainer() {
@@ -50,38 +50,40 @@ const [showTable, setShowTable] = useState(false);
   }, []);
 
   // ✅ Kullanıcıyı onayla
-  const handleApprove = async (id) => {
-    try {
-      await approvePendingUser(id); // API çağrısı
-      // Onaylanan kullanıcıyı listeden çıkar
-      setPendingUsers(prev => prev.filter(user => user.id !== id));
-    } catch (error) {
-      console.error("Kullanıcı onaylanamadı:", error);
-    }
-  };
+const handleApprove = async (id) => {
+  try {
+    await approvePendingUser(id);
+    const updatedList = pendingUsers.filter((u) => u.id !== id);
+    setPendingUsers(updatedList);
+  } catch (err) {
+    console.error("Onaylama hatası:", err);
+  }
+};
 
-  // ❌ Kullanıcıyı reddet
-  const handleReject = async (id) => {
-    try {
-      await rejectPendingUser(id); // API çağrısı
-      // Reddedilen kullanıcıyı listeden çıkar
-      setPendingUsers(prev => prev.filter(user => user.id !== id));
-    } catch (error) {
-      console.error("Kullanıcı reddedilemedi:", error);
-    }
-  };
+// ❌ Kullanıcıyı reddet
+const handleReject = async (id) => {
+  try {
+    await deletePendingUser(id);
+    const updatedList = pendingUsers.filter((u) => u.id !== id);
+    setPendingUsers(updatedList);
+  } catch (err) {
+    console.error("Silme hatası:", err);
+  }
+};
 
+  
   return (
     <SuperAdminDashboard
-      totalFirms={stats.totalFirms}
-      totalAdmins={stats.totalAdmins}
-      totalUsers={stats.totalUsers}
-      pendingUsers={pendingUsers}
-      handleToggle={handleToggle}
-      handleApprove={handleApprove} // ✅ props olarak gönderiyoruz
-      handleReject={handleReject}   // ✅ props olarak gönderiyoruz
-      showTable={showTable}           // ✅ yeni props
-      setShowTable={setShowTable} 
-    />
+  totalFirms={stats.totalFirms}
+  totalAdmins={stats.totalAdmins}
+  totalUsers={stats.totalUsers}
+  pendingUsers={pendingUsers}
+  handleToggle={handleToggle}
+  onApprove={handleApprove}  // ✅
+  onReject={handleReject}    // ✅
+  showTable={showTable}           // ✅ yeni props
+  setShowTable={setShowTable}
+/>
+   
   );
 }

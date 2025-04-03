@@ -11,8 +11,8 @@ export default function SuperAdminDashboard({
   totalUsers,
   pendingUsers,
   handleToggle,
-  handleApprove,
-  handleReject,
+  onApprove,     // ✅ yeni eklendi
+  onReject,  
   showTable,        // ✅ ekledik
   setShowTable      // ✅ ekledik
 }) {
@@ -322,13 +322,13 @@ export default function SuperAdminDashboard({
       <td>
         <button
           className="btn btn-sm btn-success mr-2"
-          onClick={() => handleApprove(user.id)} // ✅ tıklandığında onayla
+          onClick={() => onApprove(user.id)} // ✅ tıklandığında onayla
         >
           Onayla
         </button>
         <button
           className="btn btn-sm btn-danger"
-          onClick={() => handleReject(user.id)} // ❌ tıklandığında reddet
+          onClick={() => onReject(user.id)} // ❌ tıklandığında reddet
         >
           Reddet
         </button>
