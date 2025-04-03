@@ -4,31 +4,27 @@ import "datatables.net-dt/js/dataTables.dataTables"; // js dosyası
 import "datatables.net-dt/css/dataTables.dataTables.min.css"; // ✅ dikkat: doğru CSS yolu bu
 
 
+// 🧱 Ana bileşen
 export default function SuperAdminDashboard({
-  totalFirms = 0,
-  totalAdmins = 0,
-  totalUsers = 0,
+  totalFirms,
+  totalAdmins,
+  totalUsers,
+  pendingUsers,
+  handleToggle,
+  handleApprove,
+  handleReject,
+  showTable,        // ✅ ekledik
+  setShowTable      // ✅ ekledik
 }) {
-  const [showTable, setShowTable] = useState(false);
-
-  const handleToggle = (e) => {
-    e.preventDefault();
-    const parent = e.currentTarget.closest(".nav-item");
-    parent.classList.toggle("menu-open");
-
-    const link = parent.querySelector(".nav-link");
-    link.classList.toggle("active");
-  };
-
-  // 🔄 DataTables yüklemesi sadece tablo aktifse yapılır
+  // 🔁 Tablo verisi değiştiğinde DataTable'ı yükle
   useEffect(() => {
-    if (showTable) {
-      const timeout = setTimeout(() => {
+    if (pendingUsers.length > 0) {
+      setTimeout(() => {
         $('#pendingUsersTable').DataTable();
-      }, 100); // tablo renderlandıktan sonra başlat
-      return () => clearTimeout(timeout);
+      }, 100);
     }
-  }, [showTable]);
+  }, [pendingUsers]);
+
 
 
   return (
@@ -301,39 +297,49 @@ export default function SuperAdminDashboard({
               </div>
             </div>
 
-           {/* DataTable: Onay Bekleyenler */}
-           {showTable && (
-              <div className="card mt-4">
-                <div className="card-header">
-                  <h3 className="card-title">Onay Bekleyen Kullanıcılar</h3>
-                </div>
+            {/* 🟨 Onay Bekleyenler Tablosu */}
+            {showTable && pendingUsers.length > 0 && (
+              <div className="card m-3">
+                <div className="card-header"><h3 className="card-title">Onay Bekleyen Kullanıcılar</h3></div>
                 <div className="card-body">
-                  <table id="pendingUsersTable" className="table table-bordered table-striped" style={{ width: "100%" }}>
+                  <table id="pendingUsersTable" className="table table-bordered table-striped w-100">
                     <thead>
                       <tr>
-                        <th>Ad</th>
-                        <th>Email</th>
+                        <th>Kullanıcı Adı</th>
+                        <th>E-Posta</th>
+                        <th>Telefon</th>
                         <th>Rol</th>
                         <th>İşlem</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Mehmet Yılmaz</td>
-                        <td>mehmet@example.com</td>
-                        <td>Admin</td>
-                        <td>
-                          <button className="btn btn-success btn-sm mr-2">Onayla</button>
-                          <button className="btn btn-danger btn-sm">Reddet</button>
-                        </td>
-                      </tr>
-                      {/* 🔄 Buraya API'den gelen kullanıcılar dinamik eklenecek */}
-                    </tbody>
+  {pendingUsers.map((user, i) => (
+    <tr key={user.id || i}>
+      <td>{user.username}</td>
+      <td>{user.email}</td>
+      <td>{user.phone}</td>
+      <td>{user.role}</td>
+      <td>
+        <button
+          className="btn btn-sm btn-success mr-2"
+          onClick={() => handleApprove(user.id)} // ✅ tıklandığında onayla
+        >
+          Onayla
+        </button>
+        <button
+          className="btn btn-sm btn-danger"
+          onClick={() => handleReject(user.id)} // ❌ tıklandığında reddet
+        >
+          Reddet
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
                   </table>
                 </div>
               </div>
             )}
-
 
 
 
